@@ -45,6 +45,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // FlyCapture SDK from Point Grey
 #include "flycapture/FlyCapture2.h"
 
+#include "pointgrey_camera_driver/extras.h"
+
 
 class PointGreyCamera
 {
@@ -116,7 +118,7 @@ public:
   * \param image sensor_msgs::Image that will be filled with the image currently in the buffer.
   * \param frame_id The name of the optical frame of the camera.
   */
-  void grabImage(sensor_msgs::Image &image, const std::string &frame_id);
+  void grabImage(sensor_msgs::Image &image, const std::string &frame_id, pointgrey_camera_driver::extras &extras);
 
   void grabStereoImage(sensor_msgs::Image &image, const std::string &frame_id, sensor_msgs::Image &second_image, const std::string &second_frame_id);
 
@@ -161,13 +163,17 @@ public:
 
   void setBRWhiteBalance(bool auto_white_balance, uint16_t &blue, uint16_t &red);
 
-  uint getGain();
+  double getGain();
 
-  uint getShutter();
+  double getShutter();
 
-  uint getBrightness();
+  double getBrightness();
+  
+  uint getFrameCount();
 
-  uint getExposure();
+  int getGPIOState(int pin);
+
+  double getExposure();
 
   uint getWhiteBalance();
 
@@ -342,6 +348,10 @@ private:
   * \param packet_delay The packet delay value to use.
   */
   void setupGigEPacketDelay(FlyCapture2::PGRGuid & guid, unsigned int packet_delay);
+  
+  // Added by me
+  bool setGPIOpin(int pin, int direction); 
+  bool getGPIOpin(int pin, unsigned int direction);
 
 public:
   /*!
@@ -352,7 +362,6 @@ public:
   * \param error FlyCapture2::Error that is returned from many FlyCapture functions.
   */
   static void handleError(const std::string &prefix, const FlyCapture2::Error &error);
-
 };
 
 #endif

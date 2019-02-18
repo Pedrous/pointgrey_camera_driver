@@ -51,6 +51,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <fstream>
 
+#include "pointgrey_camera_driver/extras.h"
+
 namespace pointgrey_camera_driver
 {
 
@@ -286,6 +288,7 @@ private:
     it_.reset(new image_transport::ImageTransport(nh));
     image_transport::SubscriberStatusCallback cb = boost::bind(&PointGreyCameraNodelet::connectCb, this);
     it_pub_ = it_->advertiseCamera("image_raw", 5, cb, cb);
+    pub_extras_ = nh.advertise<pointgrey_camera_driver::extras>("extras", 0);
 
     // Set up diagnostics
     updater_.setHardwareID("pointgrey_camera " + cinfo_name.str());
@@ -479,7 +482,7 @@ private:
             wfov_camera_msgs::WFOVImagePtr wfov_image(new wfov_camera_msgs::WFOVImage);
             // Get the image from the camera library
             NODELET_DEBUG("Starting a new grab from camera.");
-            pg_.grabImage(wfov_image->image, frame_id_);
+            pg_.grabImage(wfov_image->image, frame_id_, extras_);
 
             // Set other values
             wfov_image->header.frame_id = frame_id_;
@@ -517,6 +520,7 @@ private:
             {
               sensor_msgs::ImagePtr image(new sensor_msgs::Image(wfov_image->image));
               it_pub_.publish(image, ci_);
+              pub_extras_.publish(extras_);
             }
           }
           catch(CameraTimeoutException& e)
@@ -566,6 +570,7 @@ private:
   boost::shared_ptr<image_transport::ImageTransport> it_; ///< Needed to initialize and keep the ImageTransport in scope.
   boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_; ///< Needed to initialize and keep the CameraInfoManager in scope.
   image_transport::CameraPublisher it_pub_; ///< CameraInfoManager ROS publisher
+  ros::Publisher pub_extras_;
   boost::shared_ptr<diagnostic_updater::DiagnosedPublisher<wfov_camera_msgs::WFOVImage> > pub_; ///< Diagnosed publisher, has to be a pointer because of constructor requirements
   ros::Subscriber sub_; ///< Subscriber for gain and white balance changes.
 
@@ -578,6 +583,7 @@ private:
   PointGreyCamera pg_; ///< Instance of the PointGreyCamera library, used to interface with the hardware.
   sensor_msgs::CameraInfoPtr ci_; ///< Camera Info message.
   std::string frame_id_; ///< Frame id for the camera messages, defaults to 'camera'
+  pointgrey_camera_driver::extras extras_;
   boost::shared_ptr<boost::thread> pubThread_; ///< The thread that reads and publishes the images.
 
   double gain_;

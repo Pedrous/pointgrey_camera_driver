@@ -26,6 +26,8 @@
   <depend>image_transport</depend>
   <depend>dynamic_reconfigure</depend>
   <depend>diagnostic_updater</depend>
+  <depend>message_generation</depend>
+  <depend>std_msgs</depend>
 
   <!-- Dependencies of libflycapture -->
   <depend>libusb-1.0-dev</depend>
@@ -33,6 +35,7 @@
 
   <exec_depend>image_proc</exec_depend>
   <exec_depend>stereo_image_proc</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
   
   <test_depend>roslaunch</test_depend>
   <test_depend>roslint</test_depend>

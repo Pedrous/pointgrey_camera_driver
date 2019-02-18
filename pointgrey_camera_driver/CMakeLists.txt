@@ -5,6 +5,17 @@ find_package(catkin REQUIRED COMPONENTS
   camera_info_manager diagnostic_updater dynamic_reconfigure
   image_exposure_msgs image_transport nodelet roscpp sensor_msgs
   wfov_camera_msgs
+  message_generation
+)
+
+add_message_files(
+  FILES
+  extras.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
 )
 
 generate_dynamic_reconfigure_options(

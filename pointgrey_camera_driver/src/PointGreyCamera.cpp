@@ -35,6 +35,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <sstream>
 #include <flycapture/FlyCapture2Defs.h>
 
+#include <bitset>
+
 using namespace FlyCapture2;
 
 PointGreyCamera::PointGreyCamera():
@@ -97,6 +99,12 @@ bool PointGreyCamera::setNewConfiguration(pointgrey_camera_driver::PointGreyConf
       PointGreyCamera::start();
     }
   }
+  
+  // Set GPIO2
+  retVal &= setGPIOpin(2, config.GPIO2_mode);
+  
+  // Set GPIO3
+  retVal &= setGPIOpin(3, config.GPIO3_mode);
 
   // Set frame rate
   retVal &= PointGreyCamera::setProperty(FRAME_RATE, false, config.frame_rate);
@@ -448,7 +456,15 @@ bool PointGreyCamera::getFormat7PixelFormatFromString(std::string &sformat, FlyC
   }
   else     // Is black and white
   {
-    if(sformat.compare("mono8") == 0)
+    if(sformat.compare("raw8") == 0)
+    {
+      fmt7PixFmt = PIXEL_FORMAT_RAW8;
+    }
+    else if(sformat.compare("raw16") == 0)
+    {
+      fmt7PixFmt = PIXEL_FORMAT_RAW16;
+    }
+    else if(sformat.compare("mono8") == 0)
     {
       fmt7PixFmt = PIXEL_FORMAT_MONO8;
     }
@@ -935,6 +951,8 @@ void PointGreyCamera::connect()
     info.exposure.onOff = true;
     info.whiteBalance.onOff = true;
     info.frameCounter.onOff = true;
+    info.strobePattern.onOff = true;
+    info.GPIOPinState.onOff = true;
     info.ROIPosition.onOff = true;
     error = cam_.SetEmbeddedImageInfo(&info);
     PointGreyCamera::handleError("PointGreyCamera::connect Could not enable metadata", error);
@@ -976,7 +994,7 @@ bool PointGreyCamera::stop()
   return false;
 }
 
-void PointGreyCamera::grabImage(sensor_msgs::Image &image, const std::string &frame_id)
+void PointGreyCamera::grabImage(sensor_msgs::Image &image, const std::string &frame_id, pointgrey_camera_driver::extras &extras)
 {
   boost::mutex::scoped_lock scopedLock(mutex_);
   if(cam_.IsConnected() && captureRunning_)
@@ -987,11 +1005,41 @@ void PointGreyCamera::grabImage(sensor_msgs::Image &image, const std::string &fr
     Error error = cam_.RetrieveBuffer(&rawImage);
     PointGreyCamera::handleError("PointGreyCamera::grabImage Failed to retrieve buffer", error);
     metadata_ = rawImage.GetMetadata();
+    
+    extras.exposure_time = getShutter();
+    extras.exposure_value = getExposure();
+    extras.gain = getGain();
+    extras.frame_count = getFrameCount();
+    extras.brightness = getBrightness();
+    extras.white_balance = getWhiteBalance();
+    extras.pps = getGPIOState(2);
 
     // Set header timestamp as embedded for now
     TimeStamp embeddedTime = rawImage.GetTimeStamp();
     image.header.stamp.sec = embeddedTime.seconds;
     image.header.stamp.nsec = 1000 * embeddedTime.microSeconds;
+    
+    
+    
+    /*ImageMetadata metadata = m_rawImage.GetMetadata();
+		unsigned int* pEmbeddedInfo = infoStruct.embeddedInfo.arEmbeddedInfo;
+
+		for (int i=0; i < k_numEmbeddedInfo; i++)
+		{
+			switch (i)
+			{
+				case 0: pEmbeddedInfo[i] = metadata.embeddedTimeStamp; break;
+				case 1: pEmbeddedInfo[i] = metadata.embeddedGain; break;
+				case 2: pEmbeddedInfo[i] = metadata.embeddedShutter; break;
+				case 3: pEmbeddedInfo[i] = metadata.embeddedBrightness; break;
+				case 4: pEmbeddedInfo[i] = metadata.embeddedExposure; break;
+				case 5: pEmbeddedInfo[i] = metadata.embeddedWhiteBalance; break;
+				case 6: pEmbeddedInfo[i] = metadata.embeddedFrameCounter; break;
+				case 7: pEmbeddedInfo[i] = metadata.embeddedStrobePattern; break;
+				case 8: pEmbeddedInfo[i] = metadata.embeddedGPIOPinState; break;
+				case 9: pEmbeddedInfo[i] = metadata.embeddedROIPosition; break;
+			}
+		}*/
 
     // Check the bits per pixel.
     uint8_t bitsPerPixel = rawImage.GetBitsPerPixel();
@@ -1159,34 +1207,64 @@ void PointGreyCamera::grabStereoImage(sensor_msgs::Image &image, const std::stri
   }
 }
 
-uint PointGreyCamera::getGain()
+double PointGreyCamera::getGain()
 {
-  return metadata_.embeddedGain >> 20;
+  //return metadata_.embeddedGain >> 20;
+  return (metadata_.embeddedGain & 0x00FFFFFF) / 480.0 * 47.994;
 }
 
-uint PointGreyCamera::getShutter()
+double PointGreyCamera::getShutter()
 {
-  return metadata_.embeddedShutter >> 20;
+  //return metadata_.embeddedShutter >> 20;
+  uint value = metadata_.embeddedShutter & 0x00FFFFFF;
+  if (value < 2049)
+    return value * 0.013387207;
+  else if (value < 3073)
+    return (value - 2048) * 0.026774194 + 27.417;
+  else
+    return (value - 3072) * 0.053547945 + 54.833106651;
 }
 
-uint PointGreyCamera::getBrightness()
+double PointGreyCamera::getBrightness()
 {
-  return metadata_.embeddedTimeStamp >> 20;
+  //return metadata_.embeddedTimeStamp >> 20;
+  return (metadata_.embeddedBrightness & 0x00FFFFFF) / 410.0 * 10.010;
 }
 
-uint PointGreyCamera::getExposure()
+uint PointGreyCamera::getFrameCount()
 {
-  return metadata_.embeddedBrightness >> 20;
+  //return metadata_.embeddedTimeStamp >> 20;
+  return metadata_.embeddedFrameCounter;
+}
+
+int PointGreyCamera::getGPIOState(int pin)
+{
+  std::bitset<8> IoStatus (metadata_.embeddedGPIOPinState);
+  std::cout << IoStatus << std::endl;
+  if (pin == 2) {
+    return 1; //TODO
+  }
+  if (pin == 3) {
+    return 1; //TODO
+  }
+  else
+    return -1;
+}
+
+double PointGreyCamera::getExposure()
+{
+  //return metadata_.embeddedBrightness >> 20;
+  return 1.442695041*log(metadata_.embeddedExposure & 0x00FFFFFF) - 7.584962501;
 }
 
 uint PointGreyCamera::getWhiteBalance()
 {
-  return metadata_.embeddedExposure >> 8;
+  return metadata_.embeddedWhiteBalance;
 }
 
 uint PointGreyCamera::getROIPosition()
 {
-  return metadata_.embeddedROIPosition >> 24;
+  return metadata_.embeddedROIPosition ;
 }
 
 void PointGreyCamera::setDesiredCamera(const uint32_t &id)
@@ -1228,4 +1306,17 @@ void PointGreyCamera::handleError(const std::string &prefix, const FlyCapture2::
     std::string desc(error.GetDescription());
     throw std::runtime_error(prefix + start + out.str() + " " + desc);
   }
+}
+
+bool PointGreyCamera::setGPIOpin(int pin, int direction) {
+  Error error = cam_.SetGPIOPinDirection( pin, (unsigned int) direction );
+  PointGreyCamera::handleError("PointGreyCamera::setGPIOPinDirection  Failed to set property ", error); /** @todo say which property? */
+  
+  return true;
+}
+bool PointGreyCamera::getGPIOpin(int pin, unsigned int direction) {
+  Error error = cam_.GetGPIOPinDirection( pin, &direction );
+  PointGreyCamera::handleError("PointGreyCamera::setGPIOPinDirection  Failed to set property ", error); /** @todo say which property? */
+  
+  return direction;
 }
