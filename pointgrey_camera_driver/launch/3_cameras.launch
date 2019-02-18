@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+
+<launch>
+  <!-- <group if="$(arg Camera)"> -->
+    <include file="$(find pointgrey_camera_driver)/launch/camera.launch">
+      <arg name="camera_serial" value="18360276"/>
+      <arg name="camera_name" value="camera_center"/>
+      <arg name="trigger_enabled" value="true" />
+    </include>
+    <include file="$(find pointgrey_camera_driver)/launch/camera.launch">
+    	<arg name="camera_serial" value="17042805"/>
+      <arg name="camera_name" value="camera_right"/>
+      <arg name="trigger_enabled" value="true" />
+    </include>
+    <include file="$(find pointgrey_camera_driver)/launch/camera.launch">
+    	<arg name="camera_serial" value="17121186"/>
+      <arg name="camera_name" value="camera_left"/>
+      <arg name="trigger_enabled" value="true" />
+    </include>
+  <!-- </group> -->
+    
+  <!-- FOR VIEWING THE CAMERAS
+  <node name="view_camera_left" type="image_view" pkg="image_view" args="image:=/camera_left/image_raw/" />
+  <node name="view_camera_right" type="image_view" pkg="image_view" args="image:=/camera_right/image_raw/" />
+  <node name="view_camera_center" type="image_view" pkg="image_view" args="image:=/camera_center/image_raw/" />
+  -->
+</launch>

@@ -99,12 +99,6 @@ bool PointGreyCamera::setNewConfiguration(pointgrey_camera_driver::PointGreyConf
       PointGreyCamera::start();
     }
   }
-  
-  // Set GPIO2
-  retVal &= setGPIOpin(2, config.GPIO2_mode);
-  
-  // Set GPIO3
-  retVal &= setGPIOpin(3, config.GPIO3_mode);
 
   // Set frame rate
   retVal &= PointGreyCamera::setProperty(FRAME_RATE, false, config.frame_rate);
@@ -194,7 +188,14 @@ bool PointGreyCamera::setNewConfiguration(pointgrey_camera_driver::PointGreyConf
     default:
       retVal &= false;
   }
-
+  
+  // Set GPIO2
+  retVal &= setGPIOpin(2, config.GPIO2_mode);
+  config.GPIO2_mode = getGPIOpin(2);
+  
+  // Set GPIO3
+  retVal &= setGPIOpin(3, config.GPIO3_mode);
+  config.GPIO3_mode = getGPIOpin(3);
 
   return retVal;
 }
@@ -1239,13 +1240,18 @@ uint PointGreyCamera::getFrameCount()
 
 int PointGreyCamera::getGPIOState(int pin)
 {
-  std::bitset<8> IoStatus (metadata_.embeddedGPIOPinState);
-  std::cout << IoStatus << std::endl;
+  std::bitset<4> IoStatus (metadata_.embeddedGPIOPinState >> 28);
+  if (pin == 0) {
+    return IoStatus[3];
+  }
+  if (pin == 1) {
+    return IoStatus[2];
+  }
   if (pin == 2) {
-    return 1; //TODO
+    return IoStatus[1];
   }
   if (pin == 3) {
-    return 1; //TODO
+    return IoStatus[0];
   }
   else
     return -1;
@@ -1308,15 +1314,16 @@ void PointGreyCamera::handleError(const std::string &prefix, const FlyCapture2::
   }
 }
 
-bool PointGreyCamera::setGPIOpin(int pin, int direction) {
-  Error error = cam_.SetGPIOPinDirection( pin, (unsigned int) direction );
-  PointGreyCamera::handleError("PointGreyCamera::setGPIOPinDirection  Failed to set property ", error); /** @todo say which property? */
+bool PointGreyCamera::setGPIOpin(int pin, unsigned int direction) {
+  Error error = cam_.SetGPIOPinDirection( pin, direction );
+  PointGreyCamera::handleError("PointGreyCamera::setGPIOPinDirection  Failed to set pin direction ", error); /** @todo say which property? */
   
   return true;
 }
-bool PointGreyCamera::getGPIOpin(int pin, unsigned int direction) {
+bool PointGreyCamera::getGPIOpin(int pin) {
+  unsigned int direction = 2;
   Error error = cam_.GetGPIOPinDirection( pin, &direction );
-  PointGreyCamera::handleError("PointGreyCamera::setGPIOPinDirection  Failed to set property ", error); /** @todo say which property? */
+  PointGreyCamera::handleError("PointGreyCamera::getGPIOPinDirection  Failed to get pin direction ", error); /** @todo say which property? */
   
   return direction;
 }

@@ -350,8 +350,8 @@ private:
   void setupGigEPacketDelay(FlyCapture2::PGRGuid & guid, unsigned int packet_delay);
   
   // Added by me
-  bool setGPIOpin(int pin, int direction); 
-  bool getGPIOpin(int pin, unsigned int direction);
+  bool setGPIOpin(int pin, unsigned int direction); 
+  bool getGPIOpin(int pin);
 
 public:
   /*!
