@@ -1,6 +1,57 @@
 <?xml version="1.0"?>
 
 <launch>
+  <!-- Specify camera names and serials -->
+  <arg name="camera1_name" default="camera1" />
+  <arg name="camera1_serial" default="0" />
+  <arg name="camera2_name" default="camera2" />
+  <arg name="camera2_serial" default="0" />
+  <arg name="camera3_name" default="camera3" />
+  <arg name="camera3_serial" default="0" />
+  
+  <!-- Common parameters to all cameras -->
+  <!-- <arg name="video_mode" default="format7_mode0" />
+  <arg name="frame_rate" default="36" />
+  <arg name="auto_exposure" default="true" />
+  <arg name="exposure" default="1.35" />  --><!-- exposure value EV, to change exposure time, adjust shutter_speed -->
+  <!-- <arg name="auto_shutter" default="true" />
+  <arg name="shutter_speed" default="0.01" />  --><!-- seconds, not ms -->
+  <!--<arg name="auto_gain" default="true" />
+  <arg name="gain" default="0" />
+  <arg name="pan" default="0" />
+  <arg name="tilt" default="0" />
+  <arg name="brightness" default="0.0" />
+  <arg name="auto_sharpness" default="true" />
+  <arg name="sharpness" default="1024.0" />
+  <arg name="auto_saturation" default="true" />
+  <arg name="saturation" default="100.0" />
+  <arg name="gamma" default="1.0" />
+  <arg name="auto_white_balance" default="true" />
+  <arg name="white_balance_blue" default="800" />
+  <arg name="white_balance_red" default="550" />
+  <arg name="format7_roi_width" default="0" />
+  <arg name="format7_roi_height" default="0" />
+  <arg name="format7_x_offset" default="0" />
+  <arg name="format7_y_offset" default="0" />
+  <arg name="format7_color_coding" default="raw8" />
+  <arg name="trigger_enabled" default="true" />
+  <arg name="trigger_mode" default="mode0" />
+  <arg name="GPIO2_mode" default="input" />
+  <arg name="GPIO3_mode" default="output" />
+  <arg name="trigger_source" default="gpio0" />
+  <arg name="trigger_polarity" default="0" />
+  <arg name="enable_trigger_delay" default="false" />
+  <arg name="trigger_delay" default="0.0" />
+  <arg name="trigger_parameter" default="0" />
+  <arg name="enable_strobe1" default="false" />
+  <arg name="strobe1_polarity" default="0" />
+  <arg name="strobe1_delay" default="0.0" />
+  <arg name="strobe1_duration" default="0.0" />
+  <arg name="enable_strobe2" default="false" />
+  <arg name="strobe2_polarity" default="0" />
+  <arg name="strobe2_delay" default="0.0" />
+  <arg name="strobe2_duration" default="0.0" /> -->
+  
   <!-- <group if="$(arg Camera)"> -->
     <include file="$(find pointgrey_camera_driver)/launch/camera.launch">
       <arg name="camera_serial" value="18360276"/>
