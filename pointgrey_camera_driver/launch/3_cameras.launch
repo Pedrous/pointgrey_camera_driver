@@ -56,17 +56,26 @@
     <include file="$(find pointgrey_camera_driver)/launch/camera.launch">
       <arg name="camera_serial" value="18360276"/>
       <arg name="camera_name" value="camera_center"/>
-      <arg name="trigger_enabled" value="true" />
+      <arg name="format7_roi_height" default="864" />
+      <arg name="format7_y_offset" default="740" />
+      <!-- <rosparam command="load" file="$(find pointgrey_camera_driver)/yaml/data_collect.yaml" /> -->
+      <!-- <arg name="trigger_enabled" value="true" /> -->
     </include>
     <include file="$(find pointgrey_camera_driver)/launch/camera.launch">
     	<arg name="camera_serial" value="17042805"/>
       <arg name="camera_name" value="camera_right"/>
-      <arg name="trigger_enabled" value="true" />
+      <arg name="format7_roi_height" default="864" />
+      <arg name="format7_y_offset" default="706" />
+      <!-- <rosparam command="load" file="$(find pointgrey_camera_driver)/yaml/data_collect.yaml" /> -->
+      <!-- <arg name="trigger_enabled" value="true" /> -->
     </include>
     <include file="$(find pointgrey_camera_driver)/launch/camera.launch">
     	<arg name="camera_serial" value="17121186"/>
       <arg name="camera_name" value="camera_left"/>
-      <arg name="trigger_enabled" value="true" />
+      <arg name="format7_roi_height" default="864" />
+      <arg name="format7_y_offset" default="716" />
+      <!-- <rosparam command="load" file="$(find pointgrey_camera_driver)/yaml/data_collect.yaml" /> -->
+      <!-- <arg name="trigger_enabled" value="true" /> -->
     </include>
   <!-- </group> -->
     

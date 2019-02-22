@@ -26,12 +26,12 @@
   <arg name="white_balance_blue" default="800" />
   <arg name="white_balance_red" default="550" />
   <arg name="format7_roi_width" default="0" />
-  <arg name="format7_roi_height" default="0" />
+  <arg name="format7_roi_height" default="732" />
   <arg name="format7_x_offset" default="0" />
-  <arg name="format7_y_offset" default="0" />
+  <arg name="format7_y_offset" default="900" />
   <arg name="format7_color_coding" default="raw8" />
   <arg name="trigger_enabled" default="true" />
-  <arg name="trigger_mode" default="mode0" />
+  <arg name="trigger_mode" default="mode14" />
   <arg name="GPIO2_mode" default="input" />
   <arg name="GPIO3_mode" default="output" />
   <arg name="trigger_source" default="gpio0" />
