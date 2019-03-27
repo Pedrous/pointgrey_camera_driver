@@ -298,7 +298,7 @@ private:
   *
   * \return Returns true when the configuration could be applied without modification.
   */
-  bool setExternalTrigger(bool &enable, std::string &mode, std::string &source, int32_t &parameter, double &delay, bool &polarityHigh);
+  bool setExternalTrigger(bool &enable, std::string &mode, std::string &source, int32_t &parameter, bool &enable_delay, double &delay, bool &polarityHigh);
 
   /*!
   * \brief Will set the external strobe of the camera.
@@ -350,8 +350,11 @@ private:
   void setupGigEPacketDelay(FlyCapture2::PGRGuid & guid, unsigned int packet_delay);
   
   // Added by me
+  ros::Duration systemOffset;
+  ros::Time syncTime;
   bool setGPIOpin(int pin, unsigned int direction); 
   bool getGPIOpin(int pin);
+  void syncTimeStamp(FlyCapture2::TimeStamp &t1, double &exposure, ros::Time &T1);
 
 public:
   /*!

@@ -35,7 +35,7 @@
   <arg name="GPIO2_mode" default="input" />
   <arg name="GPIO3_mode" default="output" />
   <arg name="trigger_source" default="gpio0" />
-  <arg name="trigger_polarity" default="0" />
+  <arg name="trigger_polarity" default="1" />
   <arg name="enable_trigger_delay" default="false" />
   <arg name="trigger_delay" default="0.0" />
   <arg name="trigger_parameter" default="0" />

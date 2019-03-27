@@ -151,7 +151,7 @@ bool PointGreyCamera::setNewConfiguration(pointgrey_camera_driver::PointGreyConf
     case pointgrey_camera_driver::PointGrey_High:
       {
       bool temp = config.trigger_polarity;
-      retVal &= PointGreyCamera::setExternalTrigger(config.enable_trigger, config.trigger_mode, config.trigger_source, config.trigger_parameter, config.trigger_delay, temp);
+      retVal &= PointGreyCamera::setExternalTrigger(config.enable_trigger, config.trigger_mode, config.trigger_source, config.trigger_parameter, config.enable_trigger_delay, config.trigger_delay, temp);
       config.strobe1_polarity = temp;
       }
       break;
@@ -744,7 +744,7 @@ bool PointGreyCamera::setExternalStrobe(bool &enable, const std::string &dest, d
   return retVal;
 }
 
-bool PointGreyCamera::setExternalTrigger(bool &enable, std::string &mode, std::string &source, int32_t &parameter, double &delay, bool &polarityHigh)
+bool PointGreyCamera::setExternalTrigger(bool &enable, std::string &mode, std::string &source, int32_t &parameter, bool &enable_delay, double &delay, bool &polarityHigh)
 {
   // return true if we can set values as desired.
   bool retVal = true;
@@ -826,7 +826,7 @@ bool PointGreyCamera::setExternalTrigger(bool &enable, std::string &mode, std::s
   triggerDelay.type = TRIGGER_DELAY;
   triggerDelay.absControl = true;
   triggerDelay.absValue = delay;
-  triggerDelay.onOff = true;
+  triggerDelay.onOff = enable_delay;
   error = cam_.SetTriggerDelay(&triggerDelay);
   PointGreyCamera::handleError("PointGreyCamera::setExternalTrigger Could not set trigger delay.", error);
   error = cam_.GetTriggerDelay(&triggerDelay);
@@ -995,6 +995,40 @@ bool PointGreyCamera::stop()
   return false;
 }
 
+void PointGreyCamera::syncTimeStamp(TimeStamp &t1, double &exposure, ros::Time &SystemTime) {
+  ros::Time T2 = ros::Time::now();
+  
+  if ( (T2 - syncTime).toSec() > 1 ) {
+    unsigned int regVal;
+    Error error = cam_.ReadRegister(0x1EA8, &regVal);
+    PointGreyCamera::handleError("PointGreyCamera::GetCycleTime Failed to read cycle time register", error);
+    
+    unsigned int second_count_now = regVal >> 25;
+    unsigned int cycle_count_now = (regVal & 0x01FFF000) >> 12;
+    //unsigned int cycle_offset = (regVal & 0x00000FF0) >> 4;
+    
+    unsigned int second_count_img = metadata_.embeddedTimeStamp >> 25;
+    unsigned int cycle_count_img = (metadata_.embeddedTimeStamp & 0x01FFF000) >> 12;
+    
+    //TimeStamp t2;
+    //Error error = cam_.GetCycleTime(&t2);
+    //PointGreyCamera::handleError("PointGreyCamera::GetCycleTime Failed to get cycle time", error);
+    
+    ros::Duration t_delta;
+    if ( second_count_now >= second_count_img )
+      t_delta = ros::Time( second_count_now, 125000 * cycle_count_now ) - ros::Time( second_count_img, 125000 * cycle_count_img );
+    else
+      t_delta = ros::Time( second_count_img + 1, 125000 * cycle_count_now ) - ros::Time( second_count_img, 125000 * cycle_count_img );
+    
+    syncTime = T2;
+    
+    ros::Time T1 = T2 - t_delta;
+    systemOffset = ros::Time(t1.seconds, 1000 * t1.microSeconds) - T1;
+  }
+  
+  SystemTime = ros::Time(t1.seconds, 1000 * t1.microSeconds) - systemOffset - ros::Duration(exposure/1000.0);
+}
+
 void PointGreyCamera::grabImage(sensor_msgs::Image &image, const std::string &frame_id, pointgrey_camera_driver::extras &extras)
 {
   boost::mutex::scoped_lock scopedLock(mutex_);
@@ -1006,21 +1040,24 @@ void PointGreyCamera::grabImage(sensor_msgs::Image &image, const std::string &fr
     Error error = cam_.RetrieveBuffer(&rawImage);
     PointGreyCamera::handleError("PointGreyCamera::grabImage Failed to retrieve buffer", error);
     metadata_ = rawImage.GetMetadata();
-    
+    TimeStamp embeddedTime = rawImage.GetTimeStamp();
     extras.exposure_time = getShutter();
+    
+    // Set synced image timestamp
+    syncTimeStamp(embeddedTime, extras.exposure_time, image.header.stamp);
+
+    //image.header.stamp.sec = embeddedTime.seconds;
+    //image.header.stamp.nsec = 1000 * embeddedTime.microSeconds;
+    
+    // Set published extras message
+    extras.header.stamp.sec = image.header.stamp.sec;
+    extras.header.stamp.nsec = image.header.stamp.nsec;
     extras.exposure_value = getExposure();
     extras.gain = getGain();
     extras.frame_count = getFrameCount();
     extras.brightness = getBrightness();
     extras.white_balance = getWhiteBalance();
     extras.pps = getGPIOState(2);
-
-    // Set header timestamp as embedded for now
-    TimeStamp embeddedTime = rawImage.GetTimeStamp();
-    image.header.stamp.sec = embeddedTime.seconds;
-    image.header.stamp.nsec = 1000 * embeddedTime.microSeconds;
-    
-    
     
     /*ImageMetadata metadata = m_rawImage.GetMetadata();
 		unsigned int* pEmbeddedInfo = infoStruct.embeddedInfo.arEmbeddedInfo;
@@ -1208,6 +1245,13 @@ void PointGreyCamera::grabStereoImage(sensor_msgs::Image &image, const std::stri
   }
 }
 
+
+/*double PointGrey::getCycleTime()
+{
+  
+  //unsigned int cycle_offset = (regVal & 0x00000FF0) >> 4;
+}*/
+
 double PointGreyCamera::getGain()
 {
   //return metadata_.embeddedGain >> 20;
@@ -1248,7 +1292,7 @@ int PointGreyCamera::getGPIOState(int pin)
     return IoStatus[2];
   }
   if (pin == 2) {
-    return IoStatus[1];
+    return !IoStatus[1];
   }
   if (pin == 3) {
     return IoStatus[0];
