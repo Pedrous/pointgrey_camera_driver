@@ -1,22 +1,27 @@
 <?xml version="1.0"?>
 
 <launch>
-  <!-- Specify camera names and serials -->
-  <arg name="camera1_name" default="camera1" />
-  <arg name="camera1_serial" default="0" />
-  <arg name="camera2_name" default="camera2" />
-  <arg name="camera2_serial" default="0" />
-  <arg name="camera3_name" default="camera3" />
-  <arg name="camera3_serial" default="0" />
+  <!-- CAMERA SPECIFIC PARAMETERS -->
+  <arg name="cam0_name" default="camera_left" />
+  <arg name="cam0_serial" default="17121186" />
+  <arg name="cam0_y_offset" default="712" />
   
-  <!-- Common parameters to all cameras -->
-  <!-- <arg name="video_mode" default="format7_mode0" />
+  <arg name="cam1_name" default="camera_center" />
+  <arg name="cam1_serial" default="18360276" />
+  <arg name="cam1_y_offset" default="740" />
+  
+  <arg name="cam2_name" default="camera_right" />
+  <arg name="cam2_serial" default="17042805" />
+  <arg name="cam2_y_offset" default="686" />
+  
+  <!-- COMMON PARAMETERS TO ALL CAMERAS -->
+  <arg name="video_mode" default="format7_mode0" />
   <arg name="frame_rate" default="36" />
   <arg name="auto_exposure" default="true" />
-  <arg name="exposure" default="1.35" />  --><!-- exposure value EV, to change exposure time, adjust shutter_speed -->
-  <!-- <arg name="auto_shutter" default="true" />
-  <arg name="shutter_speed" default="0.01" />  --><!-- seconds, not ms -->
-  <!--<arg name="auto_gain" default="true" />
+  <arg name="exposure" default="1.35" /> <!-- exposure value EV, to change exposure time, adjust shutter_speed -->
+  <arg name="auto_shutter" default="true" />
+  <arg name="shutter_speed" default="0.01" />  <!-- seconds, not ms -->
+  <arg name="auto_gain" default="true" />
   <arg name="gain" default="0" />
   <arg name="pan" default="0" />
   <arg name="tilt" default="0" />
@@ -29,17 +34,16 @@
   <arg name="auto_white_balance" default="true" />
   <arg name="white_balance_blue" default="800" />
   <arg name="white_balance_red" default="550" />
-  <arg name="format7_roi_width" default="0" />
-  <arg name="format7_roi_height" default="0" />
-  <arg name="format7_x_offset" default="0" />
-  <arg name="format7_y_offset" default="0" />
-  <arg name="format7_color_coding" default="raw8" />
+  <arg name="roi_width" default="0" />
+  <arg name="roi_height" default="0" />
+  <arg name="x_offset" default="0" />
+  <arg name="color_coding" default="raw8" />
   <arg name="trigger_enabled" default="true" />
   <arg name="trigger_mode" default="mode0" />
   <arg name="GPIO2_mode" default="input" />
   <arg name="GPIO3_mode" default="output" />
   <arg name="trigger_source" default="gpio0" />
-  <arg name="trigger_polarity" default="0" />
+  <arg name="trigger_polarity" default="1" />
   <arg name="enable_trigger_delay" default="false" />
   <arg name="trigger_delay" default="0.0" />
   <arg name="trigger_parameter" default="0" />
@@ -50,33 +54,148 @@
   <arg name="enable_strobe2" default="false" />
   <arg name="strobe2_polarity" default="0" />
   <arg name="strobe2_delay" default="0.0" />
-  <arg name="strobe2_duration" default="0.0" /> -->
+  <arg name="strobe2_duration" default="0.0" />
   
   <!-- <group if="$(arg Camera)"> -->
     <include file="$(find pointgrey_camera_driver)/launch/camera.launch">
-      <arg name="camera_serial" value="18360276"/>
-      <arg name="camera_name" value="camera_center"/>
-      <arg name="format7_roi_height" default="864" />
-      <arg name="format7_y_offset" default="740" />
-      <!-- <rosparam command="load" file="$(find pointgrey_camera_driver)/yaml/data_collect.yaml" /> -->
-      <!-- <arg name="trigger_enabled" value="true" /> -->
+    	<arg name="camera_serial" value="$(arg cam0_serial)"/>
+      <arg name="camera_name" value="$(arg cam0_name)"/>
+      
+      <arg name="video_mode" value="$(arg video_mode)" />
+      <arg name="frame_rate" value="$(arg frame_rate)" />
+      <arg name="auto_exposure" value="$(arg auto_exposure)" />
+      <arg name="exposure" value="$(arg exposure)" /> <!-- exposure value EV, to change exposure time, adjust shutter_speed -->
+      <arg name="auto_shutter" value="$(arg auto_shutter)" />
+      <arg name="shutter_speed" value="$(arg shutter_speed)" />  --><!-- seconds, not ms -->
+      <arg name="auto_gain" value="$(arg auto_gain)" />
+      <arg name="gain" value="$(arg gain)" />
+      <arg name="pan" value="$(arg pan)" />
+      <arg name="tilt" value="$(arg tilt)" />
+      <arg name="brightness" value="$(arg brightness)" />
+      <arg name="auto_sharpness" value="$(arg auto_sharpness)" />
+      <arg name="sharpness" value="$(arg sharpness)" />
+      <arg name="auto_saturation" value="$(arg auto_saturation)" />
+      <arg name="saturation" value="$(arg saturation)" />
+      <arg name="gamma" value="$(arg gamma)" />
+      <arg name="auto_white_balance" value="$(arg auto_white_balance)" />
+      <arg name="white_balance_blue" value="$(arg white_balance_blue)" />
+      <arg name="white_balance_red" value="$(arg white_balance_red)" />
+      <arg name="format7_roi_width" value="$(arg roi_width)" />
+      <arg name="format7_roi_height" value="$(arg roi_height)" />
+      <arg name="format7_x_offset" value="$(arg x_offset)" />
+      <arg name="format7_y_offset" value="$(arg cam0_y_offset)" />
+      <arg name="format7_color_coding" value="$(arg color_coding)" />
+      <arg name="trigger_enabled" value="$(arg trigger_enabled)" />
+      <arg name="trigger_mode" value="$(arg trigger_mode)" />
+      <arg name="GPIO2_mode" value="$(arg GPIO2_mode)" />
+      <arg name="GPIO3_mode" value="$(arg GPIO3_mode)" />
+      <arg name="trigger_source" value="$(arg trigger_source)" />
+      <arg name="trigger_polarity" value="$(arg trigger_polarity)" />
+      <arg name="enable_trigger_delay" value="$(arg enable_trigger_delay)" />
+      <arg name="trigger_delay" value="$(arg trigger_delay)" />
+      <arg name="trigger_parameter" value="$(arg trigger_parameter)" />
+      <arg name="enable_strobe1" value="$(arg enable_strobe1)" />
+      <arg name="strobe1_polarity" value="$(arg strobe1_polarity)" />
+      <arg name="strobe1_delay" value="$(arg strobe1_delay)" />
+      <arg name="strobe1_duration" value="$(arg strobe1_duration)" />
+      <arg name="enable_strobe2" value="$(arg enable_strobe2)" />
+      <arg name="strobe2_polarity" value="$(arg strobe2_polarity)" />
+      <arg name="strobe2_delay" value="$(arg strobe2_delay)" />
+      <arg name="strobe2_duration" value="$(arg strobe2_duration)" />
     </include>
     <include file="$(find pointgrey_camera_driver)/launch/camera.launch">
-    	<arg name="camera_serial" value="17042805"/>
-      <arg name="camera_name" value="camera_right"/>
-      <arg name="format7_roi_height" default="864" />
-      <arg name="format7_y_offset" default="686" />
-      <!-- <rosparam command="load" file="$(find pointgrey_camera_driver)/yaml/data_collect.yaml" /> -->
-      <!-- <arg name="trigger_enabled" value="true" /> -->
+      <arg name="camera_serial" value="$(arg cam1_serial)"/>
+      <arg name="camera_name" value="$(arg cam1_name)"/>
+      
+      <arg name="video_mode" value="$(arg video_mode)" />
+      <arg name="frame_rate" value="$(arg frame_rate)" />
+      <arg name="auto_exposure" value="$(arg auto_exposure)" />
+      <arg name="exposure" value="$(arg exposure)" /> <!-- exposure value EV, to change exposure time, adjust shutter_speed -->
+      <arg name="auto_shutter" value="$(arg auto_shutter)" />
+      <arg name="shutter_speed" value="$(arg shutter_speed)" />  --><!-- seconds, not ms -->
+      <arg name="auto_gain" value="$(arg auto_gain)" />
+      <arg name="gain" value="$(arg gain)" />
+      <arg name="pan" value="$(arg pan)" />
+      <arg name="tilt" value="$(arg tilt)" />
+      <arg name="brightness" value="$(arg brightness)" />
+      <arg name="auto_sharpness" value="$(arg auto_sharpness)" />
+      <arg name="sharpness" value="$(arg sharpness)" />
+      <arg name="auto_saturation" value="$(arg auto_saturation)" />
+      <arg name="saturation" value="$(arg saturation)" />
+      <arg name="gamma" value="$(arg gamma)" />
+      <arg name="auto_white_balance" value="$(arg auto_white_balance)" />
+      <arg name="white_balance_blue" value="$(arg white_balance_blue)" />
+      <arg name="white_balance_red" value="$(arg white_balance_red)" />
+      <arg name="format7_roi_width" value="$(arg roi_width)" />
+      <arg name="format7_roi_height" value="$(arg roi_height)" />
+      <arg name="format7_x_offset" value="$(arg x_offset)" />
+      <arg name="format7_y_offset" value="$(arg cam1_y_offset)" />
+      <arg name="format7_color_coding" value="$(arg color_coding)" />
+      <arg name="trigger_enabled" value="$(arg trigger_enabled)" />
+      <arg name="trigger_mode" value="$(arg trigger_mode)" />
+      <arg name="GPIO2_mode" value="$(arg GPIO2_mode)" />
+      <arg name="GPIO3_mode" value="$(arg GPIO3_mode)" />
+      <arg name="trigger_source" value="$(arg trigger_source)" />
+      <arg name="trigger_polarity" value="$(arg trigger_polarity)" />
+      <arg name="enable_trigger_delay" value="$(arg enable_trigger_delay)" />
+      <arg name="trigger_delay" value="$(arg trigger_delay)" />
+      <arg name="trigger_parameter" value="$(arg trigger_parameter)" />
+      <arg name="enable_strobe1" value="$(arg enable_strobe1)" />
+      <arg name="strobe1_polarity" value="$(arg strobe1_polarity)" />
+      <arg name="strobe1_delay" value="$(arg strobe1_delay)" />
+      <arg name="strobe1_duration" value="$(arg strobe1_duration)" />
+      <arg name="enable_strobe2" value="$(arg enable_strobe2)" />
+      <arg name="strobe2_polarity" value="$(arg strobe2_polarity)" />
+      <arg name="strobe2_delay" value="$(arg strobe2_delay)" />
+      <arg name="strobe2_duration" value="$(arg strobe2_duration)" />
     </include>
     <include file="$(find pointgrey_camera_driver)/launch/camera.launch">
-    	<arg name="camera_serial" value="17121186"/>
-      <arg name="camera_name" value="camera_left"/>
-      <arg name="format7_roi_height" default="864" />
-      <arg name="format7_y_offset" default="712" />
-      <!-- <rosparam command="load" file="$(find pointgrey_camera_driver)/yaml/data_collect.yaml" /> -->
-      <!-- <arg name="trigger_enabled" value="true" /> -->
+    	<arg name="camera_serial" value="$(arg cam2_serial)"/>
+      <arg name="camera_name" value="$(arg cam2_name)"/>
+      
+      <arg name="video_mode" value="$(arg video_mode)" />
+      <arg name="frame_rate" value="$(arg frame_rate)" />
+      <arg name="auto_exposure" value="$(arg auto_exposure)" />
+      <arg name="exposure" value="$(arg exposure)" /> <!-- exposure value EV, to change exposure time, adjust shutter_speed -->
+      <arg name="auto_shutter" value="$(arg auto_shutter)" />
+      <arg name="shutter_speed" value="$(arg shutter_speed)" />  --><!-- seconds, not ms -->
+      <arg name="auto_gain" value="$(arg auto_gain)" />
+      <arg name="gain" value="$(arg gain)" />
+      <arg name="pan" value="$(arg pan)" />
+      <arg name="tilt" value="$(arg tilt)" />
+      <arg name="brightness" value="$(arg brightness)" />
+      <arg name="auto_sharpness" value="$(arg auto_sharpness)" />
+      <arg name="sharpness" value="$(arg sharpness)" />
+      <arg name="auto_saturation" value="$(arg auto_saturation)" />
+      <arg name="saturation" value="$(arg saturation)" />
+      <arg name="gamma" value="$(arg gamma)" />
+      <arg name="auto_white_balance" value="$(arg auto_white_balance)" />
+      <arg name="white_balance_blue" value="$(arg white_balance_blue)" />
+      <arg name="white_balance_red" value="$(arg white_balance_red)" />
+      <arg name="format7_roi_width" value="$(arg roi_width)" />
+      <arg name="format7_roi_height" value="$(arg roi_height)" />
+      <arg name="format7_x_offset" value="$(arg x_offset)" />
+      <arg name="format7_y_offset" value="$(arg cam2_y_offset)" />
+      <arg name="format7_color_coding" value="$(arg color_coding)" />
+      <arg name="trigger_enabled" value="$(arg trigger_enabled)" />
+      <arg name="trigger_mode" value="$(arg trigger_mode)" />
+      <arg name="GPIO2_mode" value="$(arg GPIO2_mode)" />
+      <arg name="GPIO3_mode" value="$(arg GPIO3_mode)" />
+      <arg name="trigger_source" value="$(arg trigger_source)" />
+      <arg name="trigger_polarity" value="$(arg trigger_polarity)" />
+      <arg name="enable_trigger_delay" value="$(arg enable_trigger_delay)" />
+      <arg name="trigger_delay" value="$(arg trigger_delay)" />
+      <arg name="trigger_parameter" value="$(arg trigger_parameter)" />
+      <arg name="enable_strobe1" value="$(arg enable_strobe1)" />
+      <arg name="strobe1_polarity" value="$(arg strobe1_polarity)" />
+      <arg name="strobe1_delay" value="$(arg strobe1_delay)" />
+      <arg name="strobe1_duration" value="$(arg strobe1_duration)" />
+      <arg name="enable_strobe2" value="$(arg enable_strobe2)" />
+      <arg name="strobe2_polarity" value="$(arg strobe2_polarity)" />
+      <arg name="strobe2_delay" value="$(arg strobe2_delay)" />
+      <arg name="strobe2_duration" value="$(arg strobe2_duration)" />
     </include>
+    
   <!-- </group> -->
     
   <!-- FOR VIEWING THE CAMERAS
